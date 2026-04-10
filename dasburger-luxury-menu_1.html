@@ -1,0 +1,1781 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>das!Burger – in a box · Wiesbaden</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Bebas+Neue&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<style>
+:root {
+  --ink:       #020202;
+  --ink-2:     #020202;
+  --ink-3:     #070707;
+  --ink-4:     #0d0d0d;
+  --crimson:   #c41e1e;
+  --crimson-2: #e02020;
+  --gold:      #c9a84c;
+  --gold-2:    #e8c56a;
+  --ivory:     #f2ede4;
+  --ivory-2:   #d4cfc6;
+  --smoke:     #888880;
+  --border:    rgba(255,255,255,0.06);
+  --border-2:  rgba(255,255,255,0.12);
+  --gold-line: rgba(201,168,76,0.25);
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; font-size: 16px; }
+body {
+  background: var(--ink);
+  color: var(--ivory);
+  font-family: 'Barlow', sans-serif;
+  font-weight: 300;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* CURSOR */
+.c-cursor {
+  position: fixed; width: 8px; height: 8px;
+  background: var(--gold); border-radius: 50%;
+  pointer-events: none; z-index: 9999;
+  transform: translate(-50%,-50%);
+  transition: width .15s, height .15s, background .15s;
+}
+.c-cursor-circle {
+  position: fixed; width: 36px; height: 36px;
+  border: 1px solid rgba(201,168,76,0.5); border-radius: 50%;
+  pointer-events: none; z-index: 9998;
+  transform: translate(-50%,-50%);
+}
+body:has(a:hover) .c-cursor, body:has(button:hover) .c-cursor { width:16px; height:16px; background:var(--crimson); }
+body:has(a:hover) .c-cursor-circle, body:has(button:hover) .c-cursor-circle { border-color:rgba(196,30,30,0.4); width:50px; height:50px; }
+
+/* GRAIN */
+.grain-overlay {
+  position: fixed; inset: -100%; width: 300%; height: 300%;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23g)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.028; pointer-events: none; z-index: 9990;
+  animation: grain-anim 0.4s steps(1) infinite;
+}
+@keyframes grain-anim {
+  0%   { transform: translate(0,0); }
+  25%  { transform: translate(-4%, 3%); }
+  50%  { transform: translate(3%, -4%); }
+  75%  { transform: translate(-2%, -3%); }
+  100% { transform: translate(4%, 2%); }
+}
+
+/* LOADER */
+#loader {
+  position: fixed; inset: 0; background: #020202; z-index: 9500;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px;
+}
+.loader-wordmark { overflow: hidden; height: 80px; display: flex; align-items: center; }
+.loader-wordmark-inner {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(48px, 8vw, 72px);
+  letter-spacing: 10px; color: var(--ivory);
+  transform: translateY(100%); opacity: 0;
+}
+.loader-wordmark-inner em { font-style: normal; color: var(--crimson); }
+.loader-sub {
+  font-family: 'Barlow', sans-serif; font-size: 10px; font-weight: 400;
+  letter-spacing: 8px; color: var(--smoke); text-transform: uppercase; opacity: 0;
+}
+.loader-line-wrap { width: 180px; height: 1px; background: var(--ink-4); overflow: hidden; }
+.loader-line-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--gold) 0%, var(--crimson) 100%); }
+.loader-count { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--smoke); opacity: 0; }
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+  padding: 28px 60px; display: flex; align-items: center; justify-content: space-between;
+  opacity: 0; transform: translateY(-10px);
+  transition: background 0.4s, padding 0.4s;
+}
+nav.scrolled {
+  background: rgba(9,9,9,0.96); backdrop-filter: blur(20px);
+  padding: 18px 60px; border-bottom: 1px solid var(--border);
+}
+.nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 5px; color: var(--ivory); text-decoration: none; position: relative; }
+.nav-logo em { font-style: normal; color: var(--crimson); }
+.nav-logo::after { content: ''; position: absolute; bottom: -3px; left: 0; width: 0; height: 1px; background: var(--gold); transition: width 0.3s ease; }
+.nav-logo:hover::after { width: 100%; }
+.nav-center { display: flex; gap: 44px; list-style: none; }
+.nav-center a {
+  font-family: 'Barlow', sans-serif; font-size: 11px; font-weight: 400;
+  letter-spacing: 3px; text-transform: uppercase; color: var(--smoke); text-decoration: none;
+  transition: color 0.2s; position: relative;
+}
+.nav-center a::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 1px; background: var(--gold); transition: width 0.25s; }
+.nav-center a:hover { color: var(--ivory); }
+.nav-center a:hover::after { width: 100%; }
+.nav-center a.active { color: var(--gold); }
+.nav-center a.active::after { width: 100%; }
+.nav-right { display: flex; align-items: center; gap: 28px; }
+.nav-tel { font-family: 'Cormorant Garamond', serif; font-size: 15px; font-style: italic; color: var(--ivory-2); text-decoration: none; transition: color 0.2s; }
+.nav-tel:hover { color: var(--gold); }
+.nav-reserve {
+  font-family: 'Barlow', sans-serif; font-size: 10px; font-weight: 500;
+  letter-spacing: 3px; text-transform: uppercase; color: var(--ink); background: var(--gold);
+  padding: 10px 22px; text-decoration: none; transition: background 0.2s, color 0.2s;
+}
+.nav-reserve:hover { background: var(--gold-2); }
+
+/* HERO */
+#hero {
+  position: relative; height: 100vh; min-height: 700px;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.hero-bg {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 30% 50%, rgba(196,30,30,0.08) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 20%, rgba(201,168,76,0.06) 0%, transparent 50%),
+              #020202;
+}
+.hero-grid-lines {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 80px 80px;
+}
+.hero-content {
+  position: relative; z-index: 2; text-align: center; max-width: 900px; padding: 0 40px;
+}
+.hero-kicker {
+  font-family: 'Barlow', sans-serif; font-size: 10px; font-weight: 400;
+  letter-spacing: 8px; text-transform: uppercase; color: var(--gold);
+  margin-bottom: 28px; opacity: 0; transform: translateY(10px);
+}
+.hero-title-wrap { overflow: hidden; margin-bottom: 8px; }
+.hero-title-main {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(72px, 14vw, 160px);
+  line-height: 0.88; letter-spacing: 6px; color: var(--ivory);
+  transform: translateY(110%); display: block;
+}
+.hero-title-main em { font-style: normal; color: var(--crimson); }
+.hero-title-wrap-2 { overflow: hidden; }
+.hero-title-sub {
+  font-family: 'Cormorant Garamond', serif; font-size: clamp(22px, 4vw, 44px);
+  font-style: italic; font-weight: 300; letter-spacing: 4px; color: var(--gold-2);
+  transform: translateY(110%); display: block;
+}
+.hero-divider {
+  width: 1px; height: 60px; background: linear-gradient(to bottom, transparent, var(--gold-line), transparent);
+  margin: 32px auto; opacity: 0;
+}
+.hero-desc {
+  font-size: 14px; line-height: 1.9; letter-spacing: 1px; color: var(--ivory-2);
+  max-width: 480px; margin: 0 auto 40px; opacity: 0; transform: translateY(10px);
+}
+.hero-ctas { display: flex; gap: 20px; justify-content: center; opacity: 0; transform: translateY(10px); }
+.btn-primary {
+  font-family: 'Barlow', sans-serif; font-size: 10px; font-weight: 500;
+  letter-spacing: 4px; text-transform: uppercase; color: var(--ink); background: var(--gold);
+  padding: 16px 36px; text-decoration: none; transition: background 0.2s, transform 0.2s;
+}
+.btn-primary:hover { background: var(--gold-2); transform: translateY(-2px); }
+.btn-ghost {
+  font-family: 'Barlow', sans-serif; font-size: 10px; font-weight: 400;
+  letter-spacing: 4px; text-transform: uppercase; color: var(--ivory);
+  border: 1px solid var(--border-2); padding: 16px 36px; text-decoration: none;
+  transition: border-color 0.2s, color 0.2s, transform 0.2s;
+}
+.btn-ghost:hover { border-color: var(--gold-line); color: var(--gold); transform: translateY(-2px); }
+.hero-scroll-ind {
+  position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  font-family: 'Barlow', sans-serif; font-size: 9px; letter-spacing: 5px; text-transform: uppercase;
+  color: var(--smoke); opacity: 0;
+}
+.hero-scroll-line {
+  width: 1px; height: 40px;
+  background: linear-gradient(to bottom, var(--gold-line), transparent);
+  animation: scroll-pulse 2s ease-in-out infinite;
+}
+@keyframes scroll-pulse { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+.hero-side { position: absolute; top: 50%; transform: translateY(-50%); writing-mode: vertical-rl; opacity: 0; }
+.hero-side-l { left: 32px; }
+.hero-side-r { right: 32px; transform: translateY(-50%) rotate(180deg); }
+.hero-side span {
+  font-family: 'Barlow', sans-serif; font-size: 9px; letter-spacing: 4px;
+  text-transform: uppercase; color: var(--smoke);
+}
+
+/* SECTION BASE */
+section { padding: 120px 60px; }
+.section-eyebrow {
+  font-family: 'Barlow', sans-serif; font-size: 9px; font-weight: 400;
+  letter-spacing: 6px; text-transform: uppercase; color: var(--gold);
+  margin-bottom: 20px; opacity: 0; transform: translateY(12px);
+}
+.section-heading {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(42px, 6vw, 80px);
+  letter-spacing: 4px; line-height: 0.95;
+  background: linear-gradient(90deg, var(--ivory) 0%, var(--gold-2) 50%, var(--ivory) 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  background-position: 200% center;
+  margin-bottom: 16px;
+}
+.section-rule {
+  width: 40px; height: 1px; background: var(--gold-line); margin-bottom: 40px;
+  opacity: 0;
+}
+.reveal-up { opacity: 0; transform: translateY(24px); }
+
+/* ============================================
+   SPEISEKARTE SECTION — FULL MENU
+============================================ */
+#menu {
+  padding: 120px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+#menu::before {
+  content: 'MENU';
+  position: absolute; top: 60px; right: -20px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(100px, 16vw, 200px);
+  letter-spacing: 20px; color: rgba(201,168,76,0.03);
+  pointer-events: none; z-index: 0;
+  white-space: nowrap;
+}
+
+.menu-header {
+  padding: 0 60px;
+  margin-bottom: 80px;
+  position: relative; z-index: 1;
+}
+
+.menu-tabs {
+  display: flex;
+  gap: 0;
+  margin-top: 48px;
+  border-bottom: 1px solid var(--border);
+}
+
+.menu-tab {
+  font-family: 'Barlow', sans-serif;
+  font-size: 10px; font-weight: 400;
+  letter-spacing: 4px; text-transform: uppercase;
+  color: var(--smoke);
+  background: none; border: none;
+  padding: 16px 32px; cursor: pointer;
+  position: relative; transition: color 0.25s;
+}
+.menu-tab::after {
+  content: '';
+  position: absolute; bottom: -1px; left: 0; right: 0;
+  height: 1px; background: var(--gold);
+  transform: scaleX(0); transition: transform 0.3s ease;
+}
+.menu-tab:hover { color: var(--ivory); }
+.menu-tab.active { color: var(--gold); }
+.menu-tab.active::after { transform: scaleX(1); }
+
+/* Full menu layout */
+.menu-full-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  padding: 0;
+  position: relative; z-index: 1;
+}
+
+.menu-column {
+  padding: 60px;
+  border-right: 1px solid var(--border);
+}
+.menu-column:last-child { border-right: none; }
+
+/* Category header */
+.menu-category {
+  margin-bottom: 48px;
+}
+.menu-category + .menu-category {
+  margin-top: 56px;
+  padding-top: 56px;
+  border-top: 1px solid var(--border);
+}
+
+.menu-cat-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px; letter-spacing: 6px;
+  color: var(--ivory);
+  margin-bottom: 6px;
+  position: relative;
+  display: inline-block;
+}
+.menu-cat-title::after {
+  content: '';
+  display: block; width: 100%; height: 1px;
+  background: linear-gradient(90deg, var(--gold), transparent);
+  margin-top: 8px;
+}
+
+.menu-cat-subtitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13px; font-style: italic;
+  color: var(--smoke); letter-spacing: 2px;
+  margin-bottom: 28px;
+}
+
+/* Menu item row */
+.menu-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  position: relative;
+  transition: padding-left 0.25s;
+}
+.menu-item:last-child { border-bottom: none; }
+.menu-item::before {
+  content: '';
+  position: absolute; left: -60px; top: 0; bottom: 0;
+  width: 0; background: rgba(201,168,76,0.04);
+  transition: width 0.25s ease;
+}
+.menu-item:hover::before { width: calc(100% + 120px); }
+.menu-item:hover { padding-left: 8px; }
+
+.menu-item-left { flex: 1; }
+.menu-item-name {
+  font-family: 'Barlow', sans-serif;
+  font-size: 14px; font-weight: 400;
+  letter-spacing: 1px; color: var(--ivory);
+  display: block;
+}
+.menu-item-note {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 12px; font-style: italic;
+  color: var(--smoke); letter-spacing: 1px;
+  display: block; margin-top: 3px;
+}
+.menu-item-tag {
+  font-family: 'Barlow', sans-serif;
+  font-size: 8px; font-weight: 500;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--ink);
+  padding: 2px 7px; margin-left: 10px;
+  display: inline-block;
+  vertical-align: middle;
+}
+.tag-vegan { background: #4a7c59; }
+.tag-kids { background: var(--gold); color: var(--ink); }
+
+.menu-item-price {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px; font-weight: 300;
+  font-style: italic; color: var(--gold);
+  letter-spacing: 1px;
+  white-space: nowrap;
+  margin-left: 20px;
+}
+.menu-item-price-sub {
+  font-size: 12px; color: var(--smoke); display: block; text-align: right;
+}
+
+/* Box menus / specials */
+.menu-box-section {
+  background: rgba(201,168,76,0.04);
+  border: 1px solid var(--gold-line);
+  padding: 32px;
+  margin-bottom: 32px;
+  position: relative;
+}
+.menu-box-section::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+.menu-box-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px; letter-spacing: 5px;
+  color: var(--gold); margin-bottom: 8px;
+}
+.menu-box-desc {
+  font-family: 'Barlow', sans-serif;
+  font-size: 12px; font-weight: 300;
+  letter-spacing: 1px; color: var(--ivory-2);
+  margin-bottom: 14px; line-height: 1.6;
+}
+.menu-box-price {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px; font-style: italic;
+  color: var(--gold-2);
+}
+.menu-box-price span {
+  font-size: 14px; color: var(--smoke); font-style: normal; margin-left: 6px;
+}
+
+/* Extras / Shares compact */
+.menu-extras-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+.menu-extra-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 13px; color: var(--ivory-2);
+}
+.menu-extra-item:nth-child(odd) { padding-right: 24px; border-right: 1px solid rgba(255,255,255,0.04); }
+.menu-extra-item:nth-child(even) { padding-left: 24px; }
+.menu-extra-price {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; color: var(--gold); font-size: 15px;
+}
+
+/* Beverages */
+.menu-beverages {
+  margin-top: 0;
+}
+.menu-bev-note {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 12px; font-style: italic; color: var(--smoke);
+  margin-bottom: 20px;
+}
+
+/* Divider gold line */
+.menu-gold-divider {
+  width: 100%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-line), transparent);
+  margin: 48px 0;
+}
+
+/* Order CTA strip */
+.menu-order-strip {
+  background: linear-gradient(90deg, rgba(196,30,30,0.08), rgba(201,168,76,0.08));
+  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  padding: 48px 60px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 80px;
+  position: relative; z-index: 1;
+}
+.menu-order-strip-text h3 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 36px; letter-spacing: 4px; color: var(--ivory); margin-bottom: 6px;
+}
+.menu-order-strip-text p {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 16px; font-style: italic; color: var(--smoke);
+}
+.menu-order-links { display: flex; gap: 16px; flex-wrap: wrap; }
+.menu-order-btn {
+  font-family: 'Barlow', sans-serif; font-size: 10px; font-weight: 500;
+  letter-spacing: 3px; text-transform: uppercase;
+  padding: 14px 28px; text-decoration: none; transition: 0.2s;
+}
+.menu-order-btn-primary { background: var(--gold); color: var(--ink); }
+.menu-order-btn-primary:hover { background: var(--gold-2); }
+.menu-order-btn-ghost { border: 1px solid var(--border-2); color: var(--ivory); }
+.menu-order-btn-ghost:hover { border-color: var(--gold-line); color: var(--gold); }
+
+/* ============================================
+   ABOUT SECTION
+============================================ */
+#about {
+  padding: 120px 60px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 100px; align-items: center;
+}
+.about-text .section-eyebrow { display: block; }
+.about-body { font-size: 15px; line-height: 1.9; color: var(--ivory-2); margin-bottom: 32px; }
+.about-body + .about-body { margin-top: -8px; }
+.about-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 40px; }
+.about-fact {
+  padding: 20px; border: 1px solid var(--border);
+  opacity: 0; transform: translateY(20px);
+}
+.about-fact-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 42px; letter-spacing: 2px; color: var(--gold); line-height: 1;
+}
+.about-fact-label {
+  font-family: 'Barlow', sans-serif; font-size: 10px; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--smoke); margin-top: 6px;
+}
+.about-visual-frame {
+  position: relative; aspect-ratio: 3/4; max-height: 600px;
+  background: var(--ink-3); overflow: hidden;
+}
+.about-visual-inner {
+  position: absolute; inset: 16px;
+  background: linear-gradient(135deg, rgba(201,168,76,0.05) 0%, rgba(196,30,30,0.05) 100%);
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.about-visual-text {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(60px, 8vw, 100px);
+  letter-spacing: 8px; color: rgba(201,168,76,0.08);
+  text-align: center; line-height: 1;
+}
+.about-photo-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(2,2,2,0.6) 0%, transparent 60%);
+}
+.corner-accent {
+  position: absolute; width: 24px; height: 24px;
+  pointer-events: none;
+}
+.corner-accent.tl { top: 0; left: 0; border-top: 1px solid var(--gold); border-left: 1px solid var(--gold); }
+.corner-accent.tr { top: 0; right: 0; border-top: 1px solid var(--gold); border-right: 1px solid var(--gold); }
+.corner-accent.bl { bottom: 0; left: 0; border-bottom: 1px solid var(--gold); border-left: 1px solid var(--gold); }
+.corner-accent.br { bottom: 0; right: 0; border-bottom: 1px solid var(--gold); border-right: 1px solid var(--gold); }
+
+/* HOURS */
+#hours {
+  padding: 120px 60px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 100px; align-items: start;
+}
+.hours-table-wrap { margin-top: 48px; }
+.hours-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 20px 0; border-bottom: 1px solid var(--border);
+  opacity: 0; transform: translateX(20px);
+}
+.hours-day {
+  font-family: 'Barlow', sans-serif; font-size: 11px; font-weight: 400;
+  letter-spacing: 3px; text-transform: uppercase; color: var(--smoke);
+}
+.hours-time {
+  font-family: 'Cormorant Garamond', serif; font-size: 18px;
+  font-style: italic; color: var(--ivory);
+}
+.hours-closed { color: var(--crimson); font-style: italic; font-size: 13px; }
+.hours-note {
+  margin-top: 24px; font-family: 'Cormorant Garamond', serif;
+  font-size: 14px; font-style: italic; color: var(--smoke);
+  padding: 16px; border: 1px solid var(--border);
+}
+.hours-visual {
+  position: relative; aspect-ratio: 1; max-height: 440px;
+  background: var(--ink-3); overflow: hidden; display: flex; align-items: center; justify-content: center;
+}
+.hours-visual-text {
+  font-family: 'Bebas Neue', sans-serif; font-size: clamp(32px, 5vw, 60px);
+  letter-spacing: 6px; color: rgba(255,255,255,0.04); text-align: center;
+  line-height: 1.2;
+}
+.hours-gold-circle {
+  position: absolute; width: 200px; height: 200px;
+  border: 1px solid var(--gold-line); border-radius: 50%;
+}
+
+/* EVENTS */
+#events {
+  padding: 120px 60px;
+  position: relative; overflow: hidden;
+}
+.events-bg-text {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(80px, 14vw, 160px); letter-spacing: 20px;
+  color: rgba(255,255,255,0.02); white-space: nowrap;
+  pointer-events: none; z-index: 0;
+}
+.events-inner {
+  position: relative; z-index: 1;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
+}
+.events-visual {
+  position: relative; aspect-ratio: 4/5;
+  background: var(--ink-3); overflow: hidden;
+}
+.events-photo-inner {
+  position: absolute; inset: 16px;
+  background: linear-gradient(135deg, rgba(196,30,30,0.08) 0%, rgba(201,168,76,0.05) 100%);
+  display: flex; align-items: center; justify-content: center;
+}
+.events-photo-overlay { position: absolute; inset: 0; display: flex; align-items: flex-end; padding: 32px; }
+.events-visual-text {
+  font-family: 'Cormorant Garamond', serif; font-size: 18px;
+  font-style: italic; color: var(--ivory-2); line-height: 1.5;
+}
+
+/* ORDER SECTION */
+#order { padding: 120px 60px; text-align: center; }
+.order-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 1px; background: var(--border); margin-top: 60px;
+}
+.order-card {
+  background: var(--ink); padding: 40px 28px; text-align: center;
+  transition: background 0.3s;
+  opacity: 0; transform: translateY(30px);
+}
+.order-card:hover { background: var(--ink-4); }
+.order-card-icon {
+  font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 3px;
+  color: var(--gold); margin-bottom: 16px;
+}
+.order-card-name {
+  font-family: 'Barlow', sans-serif; font-size: 11px; font-weight: 400;
+  letter-spacing: 3px; text-transform: uppercase; color: var(--ivory);
+  margin-bottom: 10px;
+}
+.order-card-desc { font-size: 12px; color: var(--smoke); line-height: 1.6; margin-bottom: 20px; }
+.order-card a {
+  font-family: 'Barlow', sans-serif; font-size: 9px; font-weight: 500;
+  letter-spacing: 3px; text-transform: uppercase; color: var(--gold);
+  text-decoration: none; border-bottom: 1px solid var(--gold-line);
+  padding-bottom: 2px; transition: color 0.2s, border-color 0.2s;
+}
+.order-card a:hover { color: var(--gold-2); border-color: var(--gold); }
+
+/* FOOTER */
+footer {
+  border-top: 1px solid var(--border); padding: 80px 60px 40px;
+}
+.footer-top {
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 60px; margin-bottom: 60px;
+}
+.footer-logo {
+  font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 5px;
+  color: var(--ivory); text-decoration: none; display: block; margin-bottom: 16px;
+}
+.footer-logo em { font-style: normal; color: var(--crimson); }
+.footer-tagline { font-size: 13px; color: var(--smoke); line-height: 1.7; margin-bottom: 20px; }
+.footer-col-title {
+  font-family: 'Barlow', sans-serif; font-size: 9px; font-weight: 500;
+  letter-spacing: 4px; text-transform: uppercase; color: var(--gold);
+  margin-bottom: 20px;
+}
+.footer-col ul { list-style: none; }
+.footer-col li { margin-bottom: 10px; }
+.footer-col a { font-size: 13px; color: var(--smoke); text-decoration: none; transition: color 0.2s; }
+.footer-col a:hover { color: var(--ivory); }
+.footer-bottom {
+  border-top: 1px solid var(--border); padding-top: 28px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.footer-copy { font-size: 11px; color: var(--smoke); letter-spacing: 1px; }
+.footer-copy a { color: var(--smoke); text-decoration: none; transition: color 0.2s; }
+.footer-copy a:hover { color: var(--ivory); }
+
+/* MOBILE */
+@media (max-width: 900px) {
+  nav { padding: 20px 24px; }
+  nav.scrolled { padding: 14px 24px; }
+  .nav-center, .nav-right { display: none; }
+  section { padding: 80px 24px; }
+  #about, #hours { grid-template-columns: 1fr; gap: 48px; }
+  .about-visual-frame, .hours-visual { display: none; }
+  .menu-full-grid { grid-template-columns: 1fr; }
+  .menu-column { padding: 40px 24px; border-right: none; border-bottom: 1px solid var(--border); }
+  .menu-header { padding: 0 24px; }
+  .menu-order-strip { flex-direction: column; gap: 28px; padding: 40px 24px; text-align: center; }
+  .events-inner { grid-template-columns: 1fr; }
+  .events-visual { display: none; }
+  .order-grid { grid-template-columns: 1fr 1fr; }
+  .footer-top { grid-template-columns: 1fr 1fr; gap: 40px; }
+  .menu-tabs { overflow-x: auto; }
+  .menu-extras-grid { grid-template-columns: 1fr; }
+  .menu-extra-item:nth-child(odd) { padding-right: 0; border-right: none; }
+  .menu-extra-item:nth-child(even) { padding-left: 0; }
+}
+</style>
+</head>
+<body>
+
+<div class="c-cursor" id="cCursor"></div>
+<div class="c-cursor-circle" id="cCircle"></div>
+<div class="grain-overlay"></div>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-wordmark">
+    <div class="loader-wordmark-inner" id="loaderWord">das<em>!</em>Burger</div>
+  </div>
+  <div class="loader-sub">in a box · Wiesbaden</div>
+  <div class="loader-line-wrap">
+    <div class="loader-line-fill" id="loaderFill"></div>
+  </div>
+  <div class="loader-count" id="loaderCount">0%</div>
+</div>
+
+<!-- NAV -->
+<nav id="mainNav">
+  <a href="#hero" class="nav-logo">das<em>!</em>Burger</a>
+  <ul class="nav-center">
+    <li><a href="#about">Über uns</a></li>
+    <li><a href="#menu" id="navMenuBtn" onclick="openMenuOverlay(event)">Speisekarte</a></li>
+    <li><a href="#hours">Zeiten</a></li>
+    <li><a href="#events">Events</a></li>
+    <li><a href="#order">Bestellen</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="tel:061120551616" class="nav-tel">0611 20 55 16 16</a>
+    <a href="tel:061120551616" class="nav-reserve">Vorbestellen</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid-lines"></div>
+  <div class="hero-side hero-side-l" id="heroSideL">
+    <span>Wiesbaden · Louis-Bucheli-Str. 1</span>
+  </div>
+  <div class="hero-side hero-side-r" id="heroSideR">
+    <span>WED – SUN · 11:30 – 21:00</span>
+  </div>
+  <div class="hero-content">
+    <div class="hero-kicker" id="heroKicker">Wiesbadens bester Drive Through</div>
+    <div class="hero-title-wrap">
+      <span class="hero-title-main" id="heroTitleMain">das<em>!</em>Burger</span>
+    </div>
+    <div class="hero-title-wrap-2">
+      <span class="hero-title-sub" id="heroTitleSub">in a box</span>
+    </div>
+    <div class="hero-divider" id="heroDivider"></div>
+    <p class="hero-desc" id="heroDesc">Ehrliches Essen, direkt und ohne Umwege. Saftige Burger, knusprige Tacos und unvergessliche Box Menüs — zum Mitnehmen oder Drive Through.</p>
+    <div class="hero-ctas" id="heroCtas">
+      <a href="#menu" class="btn-primary">Speisekarte</a>
+      <a href="tel:061120551616" class="btn-ghost">Vorbestellen</a>
+    </div>
+  </div>
+  <div class="hero-scroll-ind" id="heroScroll">
+    <div class="hero-scroll-line"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-text">
+    <div class="section-eyebrow reveal-up">Über uns</div>
+    <h2 class="section-heading reveal-up">Ehrliches<br>Handwerk</h2>
+    <div class="section-rule reveal-up"></div>
+    <p class="about-body reveal-up">das!Burger steht für kompromisslosen Geschmack: frische Zutaten, täglich zubereitet, ohne Abkürzungen. Unser Konzept ist simpel — außergewöhnliche Burger, unkompliziert genossen.</p>
+    <p class="about-body reveal-up">Drive Through, Abholung oder Lieferung. Immer frisch, immer direkt, immer das!Burger.</p>
+    <div class="about-facts">
+      <div class="about-fact">
+        <div class="about-fact-num">100%</div>
+        <div class="about-fact-label">Frische Zutaten</div>
+      </div>
+      <div class="about-fact">
+        <div class="about-fact-num">5</div>
+        <div class="about-fact-label">Tage die Woche</div>
+      </div>
+      <div class="about-fact">
+        <div class="about-fact-num">Drive</div>
+        <div class="about-fact-label">Through Konzept</div>
+      </div>
+      <div class="about-fact">
+        <div class="about-fact-num">No.1</div>
+        <div class="about-fact-label">In Wiesbaden</div>
+      </div>
+    </div>
+  </div>
+  <div class="about-visual-frame">
+    <div class="about-visual-inner">
+      <div class="about-visual-text">das!<br>Burger</div>
+    </div>
+    <div class="about-photo-overlay"></div>
+    <div class="corner-accent tl"></div>
+    <div class="corner-accent tr"></div>
+    <div class="corner-accent bl"></div>
+    <div class="corner-accent br"></div>
+  </div>
+</section>
+
+<!-- ============================================
+     SPEISEKARTE — VOLLSTÄNDIGES MENÜ
+============================================ -->
+<section id="menu">
+  <div class="menu-header">
+    <div class="section-eyebrow reveal-up">Speisekarte</div>
+    <h2 class="section-heading reveal-up">Das Angebot</h2>
+    <div class="section-rule reveal-up"></div>
+
+    <div class="menu-tabs">
+      <button class="menu-tab active" onclick="filterMenu('all', this)">Alles</button>
+      <button class="menu-tab" onclick="filterMenu('burger', this)">Burger</button>
+      <button class="menu-tab" onclick="filterMenu('tacos', this)">Tacos</button>
+      <button class="menu-tab" onclick="filterMenu('nachos', this)">Nachos &amp; Chips</button>
+      <button class="menu-tab" onclick="filterMenu('box', this)">Box Menüs</button>
+      <button class="menu-tab" onclick="filterMenu('sides', this)">Beilagen</button>
+      <button class="menu-tab" onclick="filterMenu('drinks', this)">Getränke</button>
+    </div>
+  </div>
+
+  <div class="menu-full-grid">
+
+    <!-- LEFT COLUMN -->
+    <div class="menu-column">
+
+      <!-- BURGER -->
+      <div class="menu-category" data-cat="burger">
+        <div class="menu-cat-title">Burger</div>
+        <div class="menu-cat-subtitle">Täglich frisch zubereitet</div>
+
+        <div class="menu-item">
+          <div class="menu-item-left">
+            <span class="menu-item-name">Bacon Cheeseburger</span>
+          </div>
+          <span class="menu-item-price">11.00</span>
+        </div>
+        <div class="menu-item">
+          <div class="menu-item-left">
+            <span class="menu-item-name">Cheeseburger</span>
+          </div>
+          <span class="menu-item-price">11.55</span>
+        </div>
+        <div class="menu-item">
+          <div class="menu-item-left">
+            <span class="menu-item-name">Hamburger</span>
+          </div>
+          <span class="menu-item-price">10.50</span>
+        </div>
+        <div class="menu-item">
+          <div class="menu-item-left">
+            <span class="menu-item-name">Pulled-Pork-Sandwich</span>
+          </div>
+          <span class="menu-item-price">12.00</span>
+        </div>
+        <div class="menu-item">
+          <div class="menu-item-left">
+            <span class="menu-item-name">Veggie Burger</span>
+          </div>
+          <span class="menu-item-price">11.55</span>
+        </div>
+        <div class="menu-item">
+          <div class="menu-item-left">
+            <span class="menu-item-name">Kid's Burger
+              <span class="menu-item-tag tag-kids">Kids</span>
+            </span>
+          </div>
+          <span class="menu-item-price">8.00</span>
+        </div>
+      </div>
+
+      <!-- TACOS -->
+      <div class="menu-category" data-cat="tacos">
+        <div class="menu-cat-title">Tacos</div>
+        <div class="menu-item">
+          <div class="menu-item-left">
+            <span class="menu-item-name">Beef Taco</span>
+          </div>
+          <span class="menu-item-price">6.20</span>
+        </div>
+        <div class="menu-item">
+          <div class="menu-item-left">
+            <span class="menu-item-name">Pork Taco</span>
+            <span class="menu-item-note">with Chipotle</span>
+          </div>
+          <span class="menu-item-price">6.20</span>
+        </div>
+        <div class="menu-item">
+          <div class="menu-item-left">
+            <span class="menu-item-name">Veggie Taco
+              <span class="menu-item-tag tag-vegan">Vegan</span>
+            </span>
+          </div>
+          <span class="menu-item-price">6.20</span>
+        </div>
+        <div class="menu-item">
+          <div class="menu-item-left">
+            <span class="menu-item-name">Taco Trio</span>
+            <span class="menu-item-note">3 Tacos nach Wahl</span>
+          </div>
+          <span class="menu-item-price">15.55</span>
+        </div>
+      </div>
+
+      <!-- NACHOS & CHIPS -->
+      <div class="menu-category" data-cat="nachos">
+        <div class="menu-cat-title">Nachos &amp; Chips</div>
+        <div class="menu-item">
+          <div class="menu-item-left">
+            <span class="menu-item-name">Pulled Pork Nachos</span>
+          </div>
+          <span class="menu-item-price">11.55</span>
+        </div>
+        <div class="menu-item">
+          <div class="menu-item-left">
+            <span class="menu-item-name">Beef Brisket Nachos</span>
+          </div>
+          <span class="menu-item-price">13.95</span>
+        </div>
+        <div class="menu-item">
+          <div class="menu-item-left">
+            <span class="menu-item-name">Chips + Salsa</span>
+          </div>
+          <span class="menu-item-price">6.30</span>
+        </div>
+        <div class="menu-item">
+          <div class="menu-item-left">
+            <span class="menu-item-name">Chips + Guacamole</span>
+          </div>
+          <span class="menu-item-price">8.60</span>
+        </div>
+      </div>
+
+      <!-- SIDES -->
+      <div class="menu-category" data-cat="sides">
+        <div class="menu-cat-title">Beilagen</div>
+        <div class="menu-item">
+          <div class="menu-item-left">
+            <span class="menu-item-name">Coleslaw</span>
+            <span class="menu-item-note">hausgemacht</span>
+          </div>
+          <span class="menu-item-price">3.15</span>
+        </div>
+        <div class="menu-item">
+          <div class="menu-item-left">
+            <span class="menu-item-name">Fries</span>
+          </div>
+          <span class="menu-item-price">6.20</span>
+        </div>
+        <div class="menu-item">
+          <div class="menu-item-left">
+            <span class="menu-item-name">BBQ-Pulled-Pork Fries</span>
+          </div>
+          <span class="menu-item-price">8.60</span>
+        </div>
+      </div>
+
+    </div><!-- end left column -->
+
+    <!-- RIGHT COLUMN -->
+    <div class="menu-column">
+
+      <!-- BOX MENUS -->
+      <div class="menu-category" data-cat="box">
+        <div class="menu-cat-title">Box Menüs</div>
+        <div class="menu-cat-subtitle">Das volle Erlebnis</div>
+
+        <div class="menu-box-section">
+          <div class="menu-box-title">Box Menu I</div>
+          <div class="menu-box-desc">Hamburger · Fries / Coleslaw · Beverage</div>
+          <div class="menu-box-price">13.75 <span>€</span></div>
+        </div>
+
+        <div class="menu-box-section">
+          <div class="menu-box-title">Box Menu II</div>
+          <div class="menu-box-desc">Hamburger · Fries / Coleslaw · Tare · Beverage</div>
+          <div class="menu-box-price">17.40 <span>€</span></div>
+        </div>
+
+        <div class="menu-box-section" style="border-color: rgba(201,168,76,0.15);">
+          <div class="menu-box-title" style="color: var(--gold-2);">Kid's Menu</div>
+          <div class="menu-box-desc">Kid's Burger · Small Fries · Beverage</div>
+          <div class="menu-box-price" style="font-size:22px;">11.95 <span>€</span></div>
+        </div>
+      </div>
+
+      <!-- EXTRAS -->
+      <div class="menu-category" data-cat="sides">
+        <div class="menu-cat-title">Extras</div>
+        <div class="menu-extras-grid">
+          <div class="menu-extra-item">
+            <span>Patty</span>
+            <span class="menu-extra-price">3.15</span>
+          </div>
+          <div class="menu-extra-item">
+            <span>Bacon</span>
+            <span class="menu-extra-price">1.05</span>
+          </div>
+          <div class="menu-extra-item">
+            <span>Cheese</span>
+            <span class="menu-extra-price">1.05</span>
+          </div>
+          <div class="menu-extra-item">
+            <span>Guacamole</span>
+            <span class="menu-extra-price">2.10</span>
+          </div>
+          <div class="menu-extra-item">
+            <span>Dip</span>
+            <span class="menu-extra-price" style="font-size:11px;">Chipotle · BBQ · Fire Sauce · 1.05</span>
+          </div>
+          <div class="menu-extra-item">
+            &nbsp;
+          </div>
+        </div>
+      </div>
+
+      <!-- SHARES -->
+      <div class="menu-category" data-cat="sides">
+        <div class="menu-cat-title">Shares</div>
+        <div class="menu-item">
+          <div class="menu-item-left">
+            <span class="menu-item-name">3 Scoops mit BGL Milk</span>
+          </div>
+          <span class="menu-item-price">9.75</span>
+        </div>
+      </div>
+
+      <!-- DRINKS -->
+      <div class="menu-category menu-beverages" data-cat="drinks">
+        <div class="menu-cat-title">Getränke</div>
+        <div class="menu-bev-note">alle Preise plus Pfand</div>
+        <div class="menu-item">
+          <div class="menu-item-left">
+            <span class="menu-item-name">Softdrinks</span>
+            <span class="menu-item-note">Coke · Fanta · Sprite · Spezi</span>
+          </div>
+          <span class="menu-item-price">1.25</span>
+        </div>
+        <div class="menu-item">
+          <div class="menu-item-left">
+            <span class="menu-item-name">Beer</span>
+            <span class="menu-item-note">0,33l</span>
+          </div>
+          <span class="menu-item-price">3.15</span>
+        </div>
+      </div>
+
+      <!-- SPECIALS NOTE -->
+      <div class="menu-gold-divider"></div>
+      <div style="padding: 24px; border: 1px solid var(--gold-line); position: relative;">
+        <div style="position: absolute; top: -10px; left: 24px; background: var(--ink); padding: 0 12px;">
+          <span style="font-family:'Barlow',sans-serif; font-size:9px; letter-spacing:4px; text-transform:uppercase; color:var(--gold);">Heute</span>
+        </div>
+        <p style="font-family:'Cormorant Garamond',serif; font-size:16px; font-style:italic; color:var(--ivory-2); line-height:1.7;">
+          Frag nach unseren aktuellen<br>
+          <strong style="font-style:normal; color:var(--gold); font-weight:400; letter-spacing:1px;">Daily Specials</strong>
+        </p>
+      </div>
+
+    </div><!-- end right column -->
+
+  </div><!-- end menu-full-grid -->
+
+  <!-- ORDER STRIP -->
+  <div class="menu-order-strip">
+    <div class="menu-order-strip-text">
+      <h3>Jetzt bestellen</h3>
+      <p>Drive Through · Abholung · Lieferung nach Hause</p>
+    </div>
+    <div class="menu-order-links">
+      <a href="tel:061120551616" class="menu-order-btn menu-order-btn-primary">Vorbestellen · 0611 20 55 16 16</a>
+      <a href="https://www.ubereats.com/de/store/das!-burger-in-a-box/JC0eFDu1VG64klw6AqlfJw" target="_blank" class="menu-order-btn menu-order-btn-ghost">Uber Eats</a>
+      <a href="https://wolt.com/de/deu/wiesbaden/restaurant/dasburger-in-a-box" target="_blank" class="menu-order-btn menu-order-btn-ghost">Wolt</a>
+    </div>
+  </div>
+</section>
+
+<!-- HOURS -->
+<section id="hours">
+  <div>
+    <div class="section-eyebrow reveal-up">Öffnungszeiten</div>
+    <h2 class="section-heading reveal-up">Wann wir<br>für euch da sind</h2>
+    <div class="section-rule reveal-up"></div>
+    <div class="hours-table-wrap">
+      <div class="hours-row"><span class="hours-day">Montag</span><span class="hours-closed">Geschlossen</span></div>
+      <div class="hours-row"><span class="hours-day">Dienstag</span><span class="hours-closed">Geschlossen</span></div>
+      <div class="hours-row"><span class="hours-day">Mittwoch</span><span class="hours-time">11:30 – 15:00 &amp; 17:30 – 21:00</span></div>
+      <div class="hours-row"><span class="hours-day">Donnerstag</span><span class="hours-time">11:30 – 15:00 &amp; 17:30 – 21:00</span></div>
+      <div class="hours-row"><span class="hours-day">Freitag</span><span class="hours-time">11:30 – 15:00 &amp; 17:30 – 21:00</span></div>
+      <div class="hours-row"><span class="hours-day">Samstag</span><span class="hours-time">11:30 – 15:00 &amp; 17:30 – 21:00</span></div>
+      <div class="hours-row"><span class="hours-day">Sonntag</span><span class="hours-time">11:30 – 15:00 &amp; 17:30 – 21:00</span></div>
+    </div>
+    <div class="hours-note reveal-up">
+      Vorbestellungen telefonisch unter 0611 20 55 16 16 — auch für größere Gruppen und Catering.
+    </div>
+  </div>
+  <div class="hours-visual reveal-up">
+    <div class="hours-gold-circle"></div>
+    <div class="hours-visual-text">WED<br>–<br>SUN</div>
+    <div class="corner-accent tl"></div>
+    <div class="corner-accent tr"></div>
+    <div class="corner-accent bl"></div>
+    <div class="corner-accent br"></div>
+  </div>
+</section>
+
+<!-- EVENTS -->
+<section id="events">
+  <div class="events-bg-text">EVENTS &amp; CATERING</div>
+  <div class="events-inner">
+    <div>
+      <div class="section-eyebrow reveal-up">Events</div>
+      <h2 class="section-heading reveal-up">Feiern mit<br>das!Burger</h2>
+      <div class="section-rule reveal-up"></div>
+      <p class="reveal-up" style="font-size:15px; line-height:1.9; color:var(--ivory-2); margin-bottom:32px;">Ob Firmenfeier, Geburtstag oder privates Event — wir kommen zu euch. Exklusive Buchungen, Catering und Drive-Through-Events nach Maß.</p>
+      <a href="tel:061120551616" class="btn-primary reveal-up">Jetzt anfragen</a>
+    </div>
+    <div class="events-visual">
+      <div class="events-photo-inner"></div>
+      <div class="events-photo-overlay">
+        <span class="events-visual-text">Exklusivbuchungen &amp;<br>Catering auf Anfrage</span>
+      </div>
+      <div class="corner-accent tl"></div>
+      <div class="corner-accent tr"></div>
+      <div class="corner-accent bl"></div>
+      <div class="corner-accent br"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ORDER -->
+<section id="order">
+  <div class="section-eyebrow reveal-up">Bestellen</div>
+  <h2 class="section-heading reveal-up">Wie ihr bestellt</h2>
+  <div class="section-rule reveal-up" style="margin: 0 auto 0;"></div>
+  <div class="order-grid">
+    <div class="order-card">
+      <div class="order-card-icon">Tel</div>
+      <div class="order-card-name">Vorbestellen</div>
+      <div class="order-card-desc">Ruf uns an und bestelle direkt. Schnell, einfach, persönlich.</div>
+      <a href="tel:061120551616">0611 20 55 16 16 →</a>
+    </div>
+    <div class="order-card">
+      <div class="order-card-icon">Drive</div>
+      <div class="order-card-name">Drive Through</div>
+      <div class="order-card-desc">Einfach vorbeifahren, bestellen und abholen. Ohne Wartezeit.</div>
+      <a href="https://maps.app.goo.gl/psMrWbXDZSdTRm4SA" target="_blank">Route →</a>
+    </div>
+    <div class="order-card">
+      <div class="order-card-icon">Uber</div>
+      <div class="order-card-name">Uber Eats</div>
+      <div class="order-card-desc">Lass dir dein das!Burger direkt nach Hause liefern.</div>
+      <a href="https://www.ubereats.com/de/store/das!-burger-in-a-box/JC0eFDu1VG64klw6AqlfJw" target="_blank">Jetzt bestellen →</a>
+    </div>
+    <div class="order-card">
+      <div class="order-card-icon">Wolt</div>
+      <div class="order-card-name">Wolt</div>
+      <div class="order-card-desc">Schnelle Lieferung über Wolt — direkt an deine Tür.</div>
+      <a href="https://wolt.com/de/deu/wiesbaden/restaurant/dasburger-in-a-box" target="_blank">Jetzt bestellen →</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <a href="#hero" class="footer-logo">das<em>!</em>Burger</a>
+      <p class="footer-tagline">Wiesbadens bester Drive Through. Ehrliches Essen, direkt und ohne Umwege.</p>
+      <a href="tel:061120551616" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;color:var(--smoke);text-decoration:none;transition:color .2s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--smoke)'">0611 20 55 16 16</a>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Navigation</div>
+      <ul>
+        <li><a href="#about">Über uns</a></li>
+        <li><a href="#menu">Speisekarte</a></li>
+        <li><a href="#hours">Öffnungszeiten</a></li>
+        <li><a href="#events">Events</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Bestellen</div>
+      <ul>
+        <li><a href="tel:061120551616">Vorbestellen</a></li>
+        <li><a href="https://www.ubereats.com/de/store/das!-burger-in-a-box/JC0eFDu1VG64klw6AqlfJw" target="_blank">Uber Eats</a></li>
+        <li><a href="https://wolt.com/de/deu/wiesbaden/restaurant/dasburger-in-a-box" target="_blank">Wolt</a></li>
+        <li><a href="https://maps.app.goo.gl/psMrWbXDZSdTRm4SA" target="_blank">Drive Through</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Rechtliches</div>
+      <ul>
+        <li><a href="https://www.das-burger.com/impressum" target="_blank">Impressum</a></li>
+        <li><a href="/cdn-cgi/l/email-protection#fd94939b92bd999c8ed09f888f9a988fd39e9290">Kontakt</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">© 2026 das!Burger – in a box · d!b hospitality GmbH & Co. KG · Wiesbaden</span>
+    <span class="footer-copy"><a href="https://www.das-burger.com/impressum" target="_blank">Impressum</a></span>
+  </div>
+</footer>
+
+<!-- ============================================
+     SPEISEKARTE OVERLAY / MODAL
+============================================ -->
+<div id="menuOverlay" aria-hidden="true">
+  <div class="mo-backdrop" onclick="closeMenuOverlay()"></div>
+  <div class="mo-panel" role="dialog" aria-label="Speisekarte">
+    <div class="mo-header">
+      <div class="mo-header-left">
+        <div class="mo-eyebrow">das!Burger · Wiesbaden</div>
+        <h2 class="mo-title">Speise<em>karte</em></h2>
+        <p class="mo-sub">WED – SUN · 11:30–15:00 &amp; 17:30–21:00</p>
+      </div>
+      <button class="mo-close" onclick="closeMenuOverlay()" aria-label="Schließen">
+        <span></span><span></span>
+      </button>
+    </div>
+
+    <div class="mo-tabs">
+      <button class="mo-tab active" onclick="moFilter('all',this)">Alles</button>
+      <button class="mo-tab" onclick="moFilter('burger',this)">Burger</button>
+      <button class="mo-tab" onclick="moFilter('tacos',this)">Tacos</button>
+      <button class="mo-tab" onclick="moFilter('nachos',this)">Nachos &amp; Chips</button>
+      <button class="mo-tab" onclick="moFilter('box',this)">Box Menüs</button>
+      <button class="mo-tab" onclick="moFilter('sides',this)">Beilagen &amp; Extras</button>
+      <button class="mo-tab" onclick="moFilter('drinks',this)">Getränke</button>
+    </div>
+
+    <div class="mo-body">
+      <div class="mo-grid">
+
+        <!-- LEFT COL -->
+        <div class="mo-col">
+
+          <!-- BURGER -->
+          <div class="mo-cat" data-mocat="burger">
+            <div class="mo-cat-title">Burger</div>
+            <div class="mo-cat-sub">Täglich frisch zubereitet</div>
+            <div class="mo-item"><span class="mo-name">Bacon Cheeseburger</span><span class="mo-price">11.00</span></div>
+            <div class="mo-item"><span class="mo-name">Cheeseburger</span><span class="mo-price">11.55</span></div>
+            <div class="mo-item"><span class="mo-name">Hamburger</span><span class="mo-price">10.50</span></div>
+            <div class="mo-item"><span class="mo-name">Pulled-Pork-Sandwich</span><span class="mo-price">12.00</span></div>
+            <div class="mo-item"><span class="mo-name">Veggie Burger</span><span class="mo-price">11.55</span></div>
+            <div class="mo-item"><span class="mo-name">Kid's Burger <span class="mo-tag mo-tag-kids">Kids</span></span><span class="mo-price">8.00</span></div>
+          </div>
+
+          <!-- TACOS -->
+          <div class="mo-cat" data-mocat="tacos">
+            <div class="mo-cat-title">Tacos</div>
+            <div class="mo-item"><span class="mo-name">Beef Taco</span><span class="mo-price">6.20</span></div>
+            <div class="mo-item"><span class="mo-name">Pork Taco <span class="mo-note">with Chipotle</span></span><span class="mo-price">6.20</span></div>
+            <div class="mo-item"><span class="mo-name">Veggie Taco <span class="mo-tag mo-tag-vegan">Vegan</span></span><span class="mo-price">6.20</span></div>
+            <div class="mo-item"><span class="mo-name">Taco Trio <span class="mo-note">3 Tacos nach Wahl</span></span><span class="mo-price">15.55</span></div>
+          </div>
+
+          <!-- NACHOS -->
+          <div class="mo-cat" data-mocat="nachos">
+            <div class="mo-cat-title">Nachos &amp; Chips</div>
+            <div class="mo-item"><span class="mo-name">Pulled Pork Nachos</span><span class="mo-price">11.55</span></div>
+            <div class="mo-item"><span class="mo-name">Beef Brisket Nachos</span><span class="mo-price">15.95</span></div>
+            <div class="mo-item"><span class="mo-name">Chips + Salsa</span><span class="mo-price">6.50</span></div>
+            <div class="mo-item"><span class="mo-name">Chips + Guacamole</span><span class="mo-price">8.60</span></div>
+          </div>
+
+          <!-- SIDES -->
+          <div class="mo-cat" data-mocat="sides">
+            <div class="mo-cat-title">Beilagen</div>
+            <div class="mo-item"><span class="mo-name">Coleslaw</span><span class="mo-price">3.15</span></div>
+            <div class="mo-item"><span class="mo-name">Fries</span><span class="mo-price">6.20</span></div>
+            <div class="mo-item"><span class="mo-name">BBQ-Pulled-Pork Fries</span><span class="mo-price">8.60</span></div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT COL -->
+        <div class="mo-col mo-col-right">
+
+          <!-- BOX MENUS -->
+          <div class="mo-cat" data-mocat="box">
+            <div class="mo-cat-title">Box Menüs</div>
+
+            <div class="mo-box">
+              <div class="mo-box-label">Box Menu I</div>
+              <div class="mo-box-desc">Hamburger, Fries/Coleslaw, Beverage</div>
+              <div class="mo-box-price">13.90</div>
+            </div>
+            <div class="mo-box">
+              <div class="mo-box-label">Box Menu II</div>
+              <div class="mo-box-desc">Hamburger, Fries/Coleslaw, Tarn, Beverage</div>
+              <div class="mo-box-price">17.40</div>
+            </div>
+            <div class="mo-box mo-box-kids">
+              <div class="mo-box-label">Kid's Menu <span class="mo-tag mo-tag-kids">Kids</span></div>
+              <div class="mo-box-desc">Kid's Burger, Small Fries, Beverage</div>
+              <div class="mo-box-price">11.90</div>
+            </div>
+          </div>
+
+          <!-- EXTRAS -->
+          <div class="mo-cat" data-mocat="sides">
+            <div class="mo-cat-title">Extras</div>
+            <div class="mo-extras-grid">
+              <div class="mo-extra"><span>Patty</span><span class="mo-extra-price">3.15</span></div>
+              <div class="mo-extra"><span>Guacamole</span><span class="mo-extra-price">2.10</span></div>
+              <div class="mo-extra"><span>Bacon</span><span class="mo-extra-price">1.05</span></div>
+              <div class="mo-extra"><span>Dip <span class="mo-note">Chipotle · BBQ · Fire Sauce</span></span><span class="mo-extra-price">1.05</span></div>
+              <div class="mo-extra"><span>Cheese</span><span class="mo-extra-price">1.05</span></div>
+            </div>
+          </div>
+
+          <!-- SHARES -->
+          <div class="mo-cat" data-mocat="sides">
+            <div class="mo-box mo-box-gold">
+              <div class="mo-box-label">Shares</div>
+              <div class="mo-box-desc">3 scoops with BCL milk</div>
+              <div class="mo-box-price">5.70</div>
+            </div>
+          </div>
+
+          <!-- BEVERAGES -->
+          <div class="mo-cat" data-mocat="drinks">
+            <div class="mo-cat-title">Getränke</div>
+            <div class="mo-cat-sub">All prices plus tax included</div>
+            <div class="mo-item"><span class="mo-name">Softdrinks <span class="mo-note">Coke · Fanta · Sprite · Smith</span></span><span class="mo-price">3.25</span></div>
+            <div class="mo-item"><span class="mo-name">Beer <span class="mo-note">0.33l</span></span><span class="mo-price">3.15</span></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- BOTTOM ORDER BAR -->
+      <div class="mo-order-bar">
+        <div>
+          <div class="mo-order-title">Jetzt bestellen</div>
+          <div class="mo-order-sub">Vorbestellen · Drive Through · Lieferung</div>
+        </div>
+        <div class="mo-order-links">
+          <a href="tel:061120551616" class="mo-order-btn mo-order-primary">0611 20 55 16 16</a>
+          <a href="https://www.ubereats.com/de/store/das!-burger-in-a-box/JC0eFDu1VG64klw6AqlfJw" target="_blank" class="mo-order-btn mo-order-ghost">Uber Eats</a>
+          <a href="https://wolt.com/de/deu/wiesbaden/restaurant/dasburger-in-a-box" target="_blank" class="mo-order-btn mo-order-ghost">Wolt</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* ============================================
+   MENU OVERLAY STYLES
+============================================ */
+#menuOverlay {
+  position: fixed; inset: 0; z-index: 800;
+  display: flex; align-items: stretch; justify-content: flex-end;
+  pointer-events: none; visibility: hidden;
+}
+#menuOverlay.open {
+  pointer-events: all; visibility: visible;
+}
+.mo-backdrop {
+  position: absolute; inset: 0;
+  background: rgba(2,2,2,0.7);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+#menuOverlay.open .mo-backdrop { opacity: 1; }
+
+.mo-panel {
+  position: relative; z-index: 1;
+  width: min(100vw, 920px);
+  background: #0a0a0a;
+  border-left: 1px solid rgba(201,168,76,0.15);
+  display: flex; flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.6s cubic-bezier(0.16,1,0.3,1);
+  overflow: hidden;
+}
+#menuOverlay.open .mo-panel { transform: translateX(0); }
+
+/* HEADER */
+.mo-header {
+  padding: 40px 48px 28px;
+  display: flex; align-items: flex-start; justify-content: space-between;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  flex-shrink: 0;
+  background: linear-gradient(180deg, rgba(201,168,76,0.04) 0%, transparent 100%);
+}
+.mo-eyebrow {
+  font-family: 'Barlow', sans-serif; font-size: 9px; font-weight: 400;
+  letter-spacing: 6px; text-transform: uppercase; color: var(--gold);
+  margin-bottom: 10px;
+}
+.mo-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(36px, 5vw, 56px); letter-spacing: 5px;
+  color: var(--ivory); line-height: 1;
+}
+.mo-title em { font-style: normal; color: var(--gold); }
+.mo-sub {
+  font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic;
+  color: var(--smoke); letter-spacing: 1px; margin-top: 8px;
+}
+.mo-close {
+  width: 44px; height: 44px; background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08); cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px;
+  flex-shrink: 0; transition: background 0.2s, border-color 0.2s;
+  margin-top: 4px;
+}
+.mo-close:hover { background: rgba(201,168,76,0.08); border-color: var(--gold-line); }
+.mo-close span {
+  display: block; width: 20px; height: 1px; background: var(--ivory);
+  transition: transform 0.3s;
+}
+#menuOverlay.open .mo-close span:first-child { transform: translateY(4px) rotate(45deg); }
+#menuOverlay.open .mo-close span:last-child  { transform: translateY(-4px) rotate(-45deg); }
+
+/* TABS */
+.mo-tabs {
+  display: flex; gap: 0; overflow-x: auto; flex-shrink: 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  scrollbar-width: none;
+}
+.mo-tabs::-webkit-scrollbar { display: none; }
+.mo-tab {
+  font-family: 'Barlow', sans-serif; font-size: 10px; font-weight: 400;
+  letter-spacing: 3px; text-transform: uppercase; color: var(--smoke);
+  background: none; border: none; padding: 14px 24px; cursor: pointer;
+  position: relative; white-space: nowrap; transition: color 0.2s;
+}
+.mo-tab::after {
+  content: ''; position: absolute; bottom: -1px; left: 0; right: 0;
+  height: 1px; background: var(--gold); transform: scaleX(0); transition: transform 0.25s;
+}
+.mo-tab:hover { color: var(--ivory); }
+.mo-tab.active { color: var(--gold); }
+.mo-tab.active::after { transform: scaleX(1); }
+
+/* BODY SCROLL */
+.mo-body {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  scrollbar-width: thin; scrollbar-color: rgba(201,168,76,0.2) transparent;
+}
+.mo-body::-webkit-scrollbar { width: 4px; }
+.mo-body::-webkit-scrollbar-track { background: transparent; }
+.mo-body::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.2); border-radius: 2px; }
+
+/* GRID */
+.mo-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 0; padding: 0;
+}
+.mo-col {
+  padding: 40px 48px;
+  border-right: 1px solid rgba(255,255,255,0.06);
+}
+.mo-col-right { border-right: none; }
+
+/* CATEGORIES */
+.mo-cat { margin-bottom: 40px; }
+.mo-cat + .mo-cat {
+  padding-top: 40px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.mo-cat-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px; letter-spacing: 5px; color: var(--ivory);
+  margin-bottom: 4px;
+  position: relative; display: inline-block;
+}
+.mo-cat-title::after {
+  content: ''; display: block; width: 100%; height: 1px;
+  background: linear-gradient(90deg, var(--gold), transparent);
+  margin-top: 6px;
+}
+.mo-cat-sub {
+  font-family: 'Cormorant Garamond', serif; font-size: 12px; font-style: italic;
+  color: var(--smoke); margin-bottom: 16px; margin-top: 8px;
+}
+
+/* ITEMS */
+.mo-item {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+  transition: padding-left 0.2s;
+}
+.mo-item:last-child { border-bottom: none; }
+.mo-item:hover { padding-left: 6px; }
+.mo-name {
+  font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 400;
+  letter-spacing: 0.5px; color: var(--ivory);
+}
+.mo-note { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 11px; color: var(--smoke); margin-left: 6px; }
+.mo-price {
+  font-family: 'Cormorant Garamond', serif; font-size: 16px;
+  font-style: italic; color: var(--gold); white-space: nowrap; margin-left: 16px;
+}
+.mo-tag {
+  font-family: 'Barlow', sans-serif; font-size: 7px; font-weight: 500;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--ink);
+  padding: 2px 6px; display: inline-block; vertical-align: middle; margin-left: 6px;
+}
+.mo-tag-vegan { background: #4a7c59; color: #fff; }
+.mo-tag-kids { background: var(--gold); color: var(--ink); }
+
+/* BOX MENUS */
+.mo-box {
+  background: rgba(201,168,76,0.04); border: 1px solid var(--gold-line);
+  padding: 20px 24px; margin-bottom: 16px; position: relative;
+}
+.mo-box::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.mo-box-kids { border-color: rgba(201,168,76,0.12); }
+.mo-box-gold { background: rgba(201,168,76,0.06); }
+.mo-box-label {
+  font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 4px;
+  color: var(--gold); margin-bottom: 6px;
+}
+.mo-box-desc { font-size: 12px; color: var(--ivory-2); letter-spacing: 0.5px; margin-bottom: 10px; line-height: 1.5; }
+.mo-box-price { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-style: italic; color: var(--gold-2); }
+
+/* EXTRAS */
+.mo-extras-grid { display: flex; flex-direction: column; gap: 0; }
+.mo-extra {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 13px; color: var(--ivory-2);
+}
+.mo-extra:last-child { border-bottom: none; }
+.mo-extra-price { font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--gold); font-size: 14px; }
+
+/* ORDER BAR */
+.mo-order-bar {
+  background: linear-gradient(90deg, rgba(196,30,30,0.08), rgba(201,168,76,0.08));
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding: 28px 48px;
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  flex-shrink: 0; flex-wrap: wrap;
+}
+.mo-order-title {
+  font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 4px;
+  color: var(--ivory); margin-bottom: 4px;
+}
+.mo-order-sub { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--smoke); }
+.mo-order-links { display: flex; gap: 12px; flex-wrap: wrap; }
+.mo-order-btn {
+  font-family: 'Barlow', sans-serif; font-size: 9px; font-weight: 500;
+  letter-spacing: 3px; text-transform: uppercase; padding: 12px 20px;
+  text-decoration: none; transition: 0.2s; white-space: nowrap;
+}
+.mo-order-primary { background: var(--gold); color: var(--ink); }
+.mo-order-primary:hover { background: var(--gold-2); }
+.mo-order-ghost { border: 1px solid rgba(255,255,255,0.12); color: var(--ivory); }
+.mo-order-ghost:hover { border-color: var(--gold-line); color: var(--gold); }
+
+/* RESPONSIVE */
+@media (max-width: 700px) {
+  .mo-panel { width: 100vw; }
+  .mo-grid { grid-template-columns: 1fr; }
+  .mo-col { padding: 32px 24px; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .mo-header { padding: 28px 24px 20px; }
+  .mo-order-bar { padding: 20px 24px; flex-direction: column; align-items: flex-start; }
+  .mo-tabs { padding: 0; }
+  .mo-tab { padding: 12px 16px; }
+}
+</style>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+gsap.registerPlugin(ScrollTrigger);
+
+/* CURSOR */
+const cur = document.getElementById('cCursor');
+const circ = document.getElementById('cCircle');
+let mx=0,my=0,cx=0,cy=0;
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  gsap.to(cur, { x: mx, y: my, duration: 0.08, ease: 'none' });
+});
+(function moveCursor(){
+  cx += (mx - cx) * 0.1; cy += (my - cy) * 0.1;
+  circ.style.transform = `translate(calc(${cx}px - 50%), calc(${cy}px - 50%))`;
+  requestAnimationFrame(moveCursor);
+})();
+
+/* LOADER */
+const loaderTl = gsap.timeline({
+  onComplete: () => {
+    document.getElementById('loader').style.display = 'none';
+    startHero();
+  }
+});
+loaderTl
+  .to('#loaderWord', { y: 0, opacity: 1, duration: 0.7, ease: 'expo.out' }, 0.1)
+  .to('#loaderSub', { opacity: 1, duration: 0.4 }, 0.5)
+  .to('#loaderCount', { opacity: 1, duration: 0.3 }, 0.4)
+  .to('#loaderFill', { width: '100%', duration: 1.1, ease: 'power2.inOut' }, 0.4)
+  .to('#loaderCount', { textContent: 'Willkommen', duration: 0.01 }, 1.3)
+  .to('#loaderWord', { skewX: 5, x: -6, color: '#c41e1e', duration: 0.06 }, 1.4)
+  .to('#loaderWord', { skewX: -3, x: 8, color: '#c9a84c', duration: 0.06 }, 1.46)
+  .to('#loaderWord', { skewX: 0, x: 0, color: '#f2ede4', duration: 0.08 }, 1.52)
+  .to('#loader', { clipPath: 'inset(0 0 100% 0)', duration: 0.8, ease: 'expo.inOut', delay: 0.3 }, 1.65);
+
+/* HERO ENTRANCE */
+function startHero() {
+  const heroTl = gsap.timeline();
+  heroTl
+    .to('#mainNav', { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' }, 0)
+    .to('#heroKicker', { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, 0.15)
+    .to('#heroTitleMain', { y: 0, duration: 1, ease: 'expo.out' }, 0.25)
+    .to('#heroTitleSub', { y: 0, duration: 0.8, ease: 'expo.out' }, 0.5)
+    .to('#heroDivider', { opacity: 1, duration: 0.6 }, 0.7)
+    .to('#heroDesc', { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' }, 0.8)
+    .to('#heroCtas', { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, 1.0)
+    .to('#heroScroll', { opacity: 1, duration: 0.5 }, 1.3)
+    .to('#heroSideL, #heroSideR', { opacity: 1, duration: 0.6 }, 1.1);
+}
+
+/* NAV SCROLL */
+const nav = document.getElementById('mainNav');
+window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 60));
+
+/* SCROLL REVEALS */
+gsap.utils.toArray('.reveal-up').forEach(el => {
+  gsap.to(el, {
+    opacity: 1, y: 0, duration: 0.9, ease: 'power3.out',
+    scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none none' }
+  });
+});
+
+/* SECTION HEADING SHIMMER */
+gsap.utils.toArray('.section-heading').forEach(el => {
+  ScrollTrigger.create({
+    trigger: el, start: 'top 85%',
+    onEnter: () => gsap.fromTo(el,
+      { backgroundPosition: '200% center' },
+      { backgroundPosition: '0% center', duration: 1.5, ease: 'power2.out' }
+    )
+  });
+});
+
+/* PARALLAX hero grid */
+gsap.to('.hero-grid-lines', {
+  y: '-20%', ease: 'none',
+  scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: 1 }
+});
+
+/* EVENTS BG TEXT PARALLAX */
+gsap.to('.events-bg-text', {
+  x: '-8%', ease: 'none',
+  scrollTrigger: { trigger: '#events', start: 'top bottom', end: 'bottom top', scrub: 2 }
+});
+
+/* MENU ITEMS STAGGER */
+gsap.fromTo('.menu-item',
+  { opacity: 0, x: -12 },
+  {
+    opacity: 1, x: 0, stagger: 0.04, duration: 0.5, ease: 'power2.out',
+    scrollTrigger: { trigger: '.menu-full-grid', start: 'top 85%' }
+  }
+);
+gsap.fromTo('.menu-box-section',
+  { opacity: 0, y: 20 },
+  {
+    opacity: 1, y: 0, stagger: 0.15, duration: 0.7, ease: 'back.out(1.5)',
+    scrollTrigger: { trigger: '.menu-full-grid', start: 'top 80%' }
+  }
+);
+
+/* ORDER CARDS */
+gsap.fromTo('.order-card',
+  { opacity: 0, y: 30 },
+  {
+    opacity: 1, y: 0, stagger: 0.15, duration: 0.7, ease: 'power3.out',
+    scrollTrigger: { trigger: '.order-grid', start: 'top 82%' }
+  }
+);
+
+/* HOURS */
+gsap.fromTo('.hours-row',
+  { opacity: 0, x: 20 },
+  {
+    opacity: 1, x: 0, stagger: 0.12, duration: 0.5, ease: 'power2.out',
+    scrollTrigger: { trigger: '.hours-table-wrap', start: 'top 82%' }
+  }
+);
+
+/* ABOUT FACTS */
+gsap.fromTo('.about-fact',
+  { opacity: 0, y: 20 },
+  {
+    opacity: 1, y: 0, stagger: 0.1, duration: 0.5, ease: 'back.out(1.5)',
+    scrollTrigger: { trigger: '.about-facts', start: 'top 88%' }
+  }
+);
+
+/* SMOOTH SCROLL */
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) {
+      e.preventDefault();
+      const offsetY = 80;
+      const y = target.getBoundingClientRect().top + window.pageYOffset - offsetY;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+  });
+});
+
+/* MENU TAB FILTER */
+function filterMenu(cat, btn) {
+  // Update active tab
+  document.querySelectorAll('.menu-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+
+  // Show/hide categories
+  document.querySelectorAll('.menu-category').forEach(cat_el => {
+    if (cat === 'all') {
+      cat_el.style.display = '';
+    } else {
+      const matches = cat_el.dataset.cat === cat;
+      cat_el.style.display = matches ? '' : 'none';
+    }
+  });
+
+  // Re-animate visible items
+  gsap.fromTo(
+    document.querySelectorAll('.menu-category:not([style*="none"]) .menu-item, .menu-category:not([style*="none"]) .menu-box-section'),
+    { opacity: 0, y: 10 },
+    { opacity: 1, y: 0, stagger: 0.03, duration: 0.4, ease: 'power2.out' }
+  );
+}
+
+/* ACTIVE NAV LINK */
+const sections = document.querySelectorAll('section[id]');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 120) current = s.id;
+  });
+  document.querySelectorAll('.nav-center a').forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current));
+});
+
+/* MENU OVERLAY */
+function openMenuOverlay(e) {
+  if (e) e.preventDefault();
+  const overlay = document.getElementById('menuOverlay');
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  // animate items in
+  gsap.fromTo('.mo-cat',
+    { opacity: 0, x: 20 },
+    { opacity: 1, x: 0, stagger: 0.06, duration: 0.5, ease: 'power3.out', delay: 0.35 }
+  );
+}
+function closeMenuOverlay() {
+  const overlay = document.getElementById('menuOverlay');
+  overlay.classList.remove('open');
+  document.body.style.overflow = '';
+}
+// ESC key to close
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeMenuOverlay();
+});
+
+/* OVERLAY TAB FILTER */
+function moFilter(cat, btn) {
+  document.querySelectorAll('.mo-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.mo-cat').forEach(el => {
+    el.style.display = (cat === 'all' || el.dataset.mocat === cat) ? '' : 'none';
+  });
+  gsap.fromTo(
+    document.querySelectorAll('.mo-cat:not([style*="none"]) .mo-item, .mo-cat:not([style*="none"]) .mo-box'),
+    { opacity: 0, y: 8 },
+    { opacity: 1, y: 0, stagger: 0.025, duration: 0.35, ease: 'power2.out' }
+  );
+}
+</script>
+</body>
+</html>
